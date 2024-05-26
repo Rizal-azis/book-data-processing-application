@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshelf App Rizal Book</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="js/script.js">
+</head>
+<body>
+    <h1 class="head_bar__title">Bookshelf App Rizal Book Collection</h1>
+
+  <div id="shelf1">
+    <h2>Belum selesai dibaca</h2>
+    <ul id="unfinishedBooks"></ul>
+  </div>
+
+  <div id="shelf2">
+    <h2>Selesai dibaca</h2>
+    <ul id="finishedBooks"></ul>
+  </div>
+
+  <form id="addBookForm">
+    <label for="title">Judul:</label>
+    <input type="text" id="title" required>
+    <label for="author">Penulis:</label>
+    <input type="text" id="author" required>
+    <label for="year">Tahun:</label>
+    <input type="number" id="year" required>
+    <label for="isComplete">Selesai dibaca?</label>
+    <input type="checkbox" id="isComplete">
+    <button type="submit">Tambah Buku</button>
+  </form>
+
+  <form id="searchForm">
+    <input type="text" id="searchInput" placeholder="Cari buku...">
+    <button type="submit">Cari</button>
+  </form>
+  
+  <ul id="searchResults"></ul>
+  
+
+  <script>
+    const addBookForm = document.getElementById('addBookForm');
+    const titleInput = document.getElementById('title');
+    const authorInput = document.getElementById('author');
+    const yearInput = document.getElementById('year');
+    const isCompleteInput = document.getElementById('isComplete');
+    const unfinishedBooksList = document.getElementById('unfinishedBooks');
+    const finishedBooksList = document.getElementById('finishedBooks');
+
+    function addBook(event) {
+      event.preventDefault();
+      const id = +new Date();
+      const title = titleInput.value;
+      const author = authorInput.value;
+      const year = parseInt(yearInput.value);
+      const isComplete = isCompleteInput.checked;
+
+      const book = { id, title, author, year, isComplete };
+
+      let books = JSON.parse(localStorage.getItem('books')) || [];
+      books.push(book);
+      localStorage.setItem('books', JSON.stringify(books));
+
+      displayBooks();
+      addBookForm.reset();
+    }
+
+    function moveBook(id, isComplete) {
+      let books = JSON.parse(localStorage.getItem('books')) || [];
+      const index = books.findIndex(book => book.id === id);
+      if (index !== -1) {
+        books[index].isComplete = isComplete;
+        localStorage.setItem('books', JSON.stringify(books));
+        displayBooks();
+      }
+    }
+
+    function deleteBook(id) {
+      let books = JSON.parse(localStorage.getItem('books')) || [];
+      books = books.filter(book => book.id !== id);
+      localStorage.setItem('books', JSON.stringify(books));
+      displayBooks();
+    }
+
+    function displayBooks() {
+      let books = JSON.parse(localStorage.getItem('books')) || [];
+      const unfinishedBooks = books.filter(book => !book.isComplete);
+      const finishedBooks = books.filter(book => book.isComplete);
+
+      unfinishedBooksList.innerHTML = '';
+      finishedBooksList.innerHTML = '';
+
+      unfinishedBooks.forEach(book => {
+        const li = document.createElement('li');
+        li.textContent = `${book.title} - ${book.author} (${book.year})`;
+        const moveButton = document.createElement('button');
+        moveButton.textContent = 'Selesai Dibaca';
+        moveButton.addEventListener('click', () => moveBook(book.id, true));
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Hapus';
+        deleteButton.addEventListener('click', () => deleteBook(book.id));
+        li.appendChild(moveButton);
+        li.appendChild(deleteButton);
+        unfinishedBooksList.appendChild(li);
+      });
+
+      finishedBooks.forEach(book => {
+        const li = document.createElement('li');
+        li.textContent = `${book.title} - ${book.author} (${book.year})`;
+        const moveButton = document.createElement('button');
+        moveButton.textContent = 'Belum Selesai Dibaca';
+        moveButton.addEventListener('click', () => moveBook(book.id, false));
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Hapus';
+        deleteButton.addEventListener('click', () => deleteBook(book.id));
+        li.appendChild(moveButton);
+        li.appendChild(deleteButton);
+        finishedBooksList.appendChild(li);
+      });
+    }
+
+    addBookForm.addEventListener('submit', addBook);
+
+    displayBooks();
+
+
+    const searchInput = document.getElementById('searchInput');
+const searchForm = document.getElementById('searchForm');
+
+function searchBooks(event) {
+  event.preventDefault();
+  const searchText = searchInput.value.toLowerCase();
+  let books = JSON.parse(localStorage.getItem('books')) || [];
+  const searchResults = books.filter(book =>
+    book.title.toLowerCase().includes(searchText) ||
+    book.author.toLowerCase().includes(searchText) ||
+    book.year.toString().includes(searchText)
+  );
+  displaySearchResults(searchResults);
+}
+
+function displaySearchResults(results) {
+  const searchResultsList = document.getElementById('searchResults');
+  searchResultsList.innerHTML = '';
+  results.forEach(book => {
+    const li = document.createElement('li');
+    li.textContent = `${book.title} - ${book.author} (${book.year})`;
+    const moveButton = document.createElement('button');
+    moveButton.textContent = 'Pindahkan ke Rak';
+    moveButton.addEventListener('click', () => moveBook(book.id, !book.isComplete));
+    li.appendChild(moveButton);
+    searchResultsList.appendChild(li);
+  });
+}
+
+searchForm.addEventListener('submit', searchBooks);
+
+const footer = document.createElement('footer');
+footer.innerHTML = `
+  <div class="container">
+    <p>&copy; ${new Date().getFullYear()} Bookshelf App Rizal Azis App Submision Dicoding</p>
+    <p id="user">Welcome, Guest</p>
+  </div>
+`;
+document.body.appendChild(footer);
+
+const username = localStorage.getItem('username');
+if (username) {
+  const userElement = document.getElementById('user');
+  userElement.textContent = `Welcome, ${username}`;
+}
+
+
+  </script>
+</body>
+</html>
